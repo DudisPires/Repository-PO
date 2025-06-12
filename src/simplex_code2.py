@@ -184,14 +184,11 @@ class Simplex:
             linha_pivo= i +1 
             A = self.tabela.astype(float).copy()
             pivo = A[linha_pivo, coluna_pivo]
-        
             if pivo == 0:
                 raise ValueError("O pivô é zero. Não é possível escalonar com esse pivô.")
 
-            # Normaliza a linha do pivô (torna o pivô = 1)
             A[linha_pivo] = A[linha_pivo] / pivo
-
-            # Elimina todos os outros elementos da coluna do pivô
+        
             for i in range(A.shape[0]):
                 if i != linha_pivo:
                     fator = A[i, coluna_pivo]
@@ -234,23 +231,3 @@ class Simplex:
                     else:
                         print("vish")
     """
-            
-
-
-
-
-def main():
-    A = np.array([[2, 1],
-                  [1, 2]])
-    b = np.array([20, 20])
-    z = np.array([10, 12])  # Maximizar Z = 10 x1 + 12 x2
-
-    simplex = Simplex(A, b, z)
-    simplex.cria_tabela()
-    #simplex.exibe_solucao()
-    #simplex.quem_entra_quem_sai()
-    #simplex.cria_nova_tabela()
-
-
-if __name__ == "__main__":
-    main()
