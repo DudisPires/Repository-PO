@@ -8,27 +8,6 @@ class Simplex:
         self.independentes = independentes
         self.f_obj = f_obj
         self.tabela = None
-
-    def m_grande(self):
-        print(self.operadores)
-        self.num_variaveis = self.coeficientes.shape[1]
-        self.num_restricoes = self.coeficientes.shape[0]
-        posicao=0
-        aux= 0 
-        for i in range(len(self.operadores)):
-            if self.operadores[i] == '>=':
-                aux= aux + 1
-                posicao=i                                       #AAAAAAAAAAAAAAAAAAAAA
-        if aux == 0 :
-            print('entrou1')
-            self.cria_tabela()
-        elif aux != 0:
-            
-            print('entrou2')
-            self.num_restricoes= self.num_restricoes + 1
-            print(self.num_restricoes)
-            self.cria_tabela()
-            ...
         
 
     def cria_tabela(self):
@@ -37,31 +16,43 @@ class Simplex:
         self.num_variaveis = self.coeficientes.shape[1]
         self.num_restricoes = self.coeficientes.shape[0]
 
-        identidade = np.eye(self.num_restricoes)
-        coluna_z = np.array([-1] + [0] * self.num_restricoes).reshape(-1, 1)
+        identidade = np.eye(self.num_restricoes + 1)
+        coluna_z = np.array([0] + [-1] + [0] * self.num_restricoes).reshape(-1, 1)
+        coluna_w = np.array([1] + [0] * self.num_restricoes + [0]).reshape(-1, 1)
+
+        self.f_obj_w = np.array([1] + [0] * (self.num_restricoes + 1))
+        self.independentes = np.array([0] + self.independentes)
 
         matriz_restricoes = np.hstack((self.coeficientes, identidade, self.independentes.reshape(-1, 1)))
         linha_objetivo = np.hstack((self.f_obj, np.zeros(self.num_restricoes), [0]))
+        linha_objetivo_w = np.hstack((self.f_obj_w, np.zeros(self.num_restricoes), [0]))
 
-        tabela = np.vstack((linha_objetivo, matriz_restricoes))
-        tabela_com_z = np.hstack((coluna_z, tabela))
+        tabela = np.vstack((linha_objetivo_w, linha_objetivo, matriz_restricoes))
+        tabela_com_z = np.hstack((coluna_w, coluna_z, tabela))
+
+        a = []
+        for i in range(len(self.operadores)):
+            if self.operadores[i] == '>=':
+                a.append(1)
 
         nomes_variaveis = [f"X{i+1}" for i in range(self.num_variaveis)]
+        nomes_auxliares = [f"A{j+1}" for j in range(len(a))]
         self.variaveis_base_inicial = [f"S{i+1}" for i in range(self.num_restricoes)]
-        self.nomes_colunas = ["Z"] + nomes_variaveis + self.variaveis_base_inicial + ["b"]
-        self.nomes_linhas = ["Z"] + self.variaveis_base_inicial
-        #self.variaveis_base= self.variaveis_base
-        self.variaveis_base_inicial= np.array((self.variaveis_base_inicial))
+
+        self.nomes_colunas = ["W", "Z"] + nomes_variaveis + nomes_auxliares + self.variaveis_base_inicial + ["b"]
+        self.nomes_linhas = ["W", "Z"] + self.variaveis_base_inicial
+        self.variaveis_base_inicial = np.array(self.variaveis_base_inicial)
 
         df = pd.DataFrame(tabela_com_z, columns=self.nomes_colunas, index=self.nomes_linhas)
-        self.variaveis_base= self.variaveis_base_inicial
-        #print(tabela_com_z)
+        self.variaveis_base = self.variaveis_base_inicial
+
         print("\n\033[32mTabela do Simplex:\033[0m\n")
         print(df.round(2))
 
         self.tabela = tabela_com_z
-        self.exibe_solucao()
-        #return tabela_com_z
+        self.df = df
+        self.fase = 1
+        self.resolver()
 
     def exibe_solucao(self):
         linha_func_obj = self.tabela[0, :]
@@ -254,3 +245,21 @@ class Simplex:
                     else:
                         print("vish")
     """
+ 
+    def main():
+        A = np.array([[2, 1],
+                    [1, 2]])
+        operadores= np.array((['<=','>=']))
+        b = np.array([20, 20])
+        z = np.array([10, 12])  # Maximizar Z = 10 x1 + 12 x2
+
+        simplex = Simplex(A, b, z, operadores)
+        #simplex.m_grande()
+        simplex.cria_tabela()
+        #simplex.exibe_solucao()
+        #simplex.quem_entra_quem_sai()
+        #simplex.cria_nova_tabela()
+
+
+    if __name__ == "__main__":
+        main()
