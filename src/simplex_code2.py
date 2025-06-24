@@ -8,10 +8,17 @@ class Simplex:
         self.independentes = independentes
         self.f_obj = f_obj
         self.tabela = None
+        self.nomes_colunas = []
+        self.nomes_linhas = []
+        self.variaveis_base = np.array([])
+        self.num_variaveis = 0
+        self.num_restricoes = 0
+
 
     def cria_tabela(self):
-        print("\n\033[31mComeço do SIMPLEX\033[0m")
-        print("\033[31m-------------------------------------\033[0m")
+        # Esta função é mais adequada para problemas padrão (não Big-M)
+        print("\n\033[31mComeço do SIMPLEX (Método Padrão)\033[0m")
+        # ... (o resto desta função pode permanecer como está, pois o M-Grande não a utiliza)
         self.num_variaveis = self.coeficientes.shape[1]
         self.num_restricoes = self.coeficientes.shape[0]
 
@@ -25,232 +32,119 @@ class Simplex:
         tabela_com_z = np.hstack((coluna_z, tabela))
 
         nomes_variaveis = [f"X{i+1}" for i in range(self.num_variaveis)]
-        self.variaveis_base_inicial = [f"S{i+1}" for i in range(self.num_restricoes)]
-        self.nomes_colunas = ["Z"] + nomes_variaveis + self.variaveis_base_inicial + ["b"]
-        self.nomes_linhas = ["Z"] + self.variaveis_base_inicial
-        #self.variaveis_base= self.variaveis_base
-        self.variaveis_base_inicial= np.array((self.variaveis_base_inicial))
+        self.variaveis_base = np.array([f"S{i+1}" for i in range(self.num_restricoes)])
+        self.nomes_colunas = ["Z"] + nomes_variaveis + list(self.variaveis_base) + ["b"]
+        self.nomes_linhas = ["Z"] + list(self.variaveis_base)
 
         df = pd.DataFrame(tabela_com_z, columns=self.nomes_colunas, index=self.nomes_linhas)
-        self.variaveis_base= self.variaveis_base_inicial
-        #print(tabela_com_z)
+        self.tabela = tabela_com_z
+        
         print("\n\033[32mTabela do Simplex:\033[0m\n")
         print(df.round(2))
 
-        self.tabela = tabela_com_z
         self.exibe_solucao()
-        #return tabela_com_z
+
 
     def exibe_solucao(self):
+        indice_coluna_b = self.tabela.shape[1] - 1
         linha_func_obj = self.tabela[0, :]
-        matriz_sol = np.array([linha_func_obj])  # inicializa com a linha Z
-
-        for i in range(1, self.num_restricoes + 1):
-            linha_base = self.tabela[i, :]
-            matriz_sol = np.vstack((matriz_sol, linha_base))
-
-        print("\nLinha da função objetivo:")
-        print(f"{linha_func_obj}")
-        valor_z= linha_func_obj[self.num_variaveis + self.num_restricoes + 1 ]
-        #print(f"\nO valor de Z é = {-1 * valor_z:.3f}\n")
+        
+        valor_z = linha_func_obj[indice_coluna_b]
         print(f"\033[33m\nO valor de Z é = {-1 * valor_z:.3f}\n\033[0m")
 
-        valor_base=[]
-        for j in range(self.num_restricoes):
-            valor_base.append(matriz_sol[ j + 1 , self.num_variaveis + self.num_restricoes + 1])
-        
         print("Os valores das variaveis na base são: ")
-        for valor in range(self.num_restricoes):
-            print(f"\033[35m\nVariável {self.variaveis_base[valor]} = {valor_base[valor]:.2f} \033[0m")
+        for j in range(self.num_restricoes):
+            valor_base = self.tabela[j + 1, indice_coluna_b]
+            print(f"\033[35m\nVariável {self.variaveis_base[j]} = {valor_base:.2f} \033[0m")
 
-            #print(f"  \nVariável {self.variaveis_base[valor]} = {valor_base[valor]:.2f} ")
-
-        #print("\nTabela de solução:")
-        #self.cria_nova_tabela(self.variaveis_base)
-        #self.imprime_tab()
-        aux=0
-        for k in range(len(linha_func_obj)):
-            if linha_func_obj[k] > 0:
-                aux= aux + 1
-        if (aux == 0):
-            print("----------------------------------------")
-            print("\nFim do SIMPLEX!")
-            self.exibe_solucao_apenas()
-            print("\n")
-            self.imprime_tab()
-            return
-        else:
+        # --- LÓGICA DE PARADA CORRIGIDA ---
+        # Para o método padrão (indicadores negativos), a solução é ótima quando
+        # não há mais valores negativos na linha Z.
+        if any(linha_func_obj[1:-1] < -1e-9): # Procura por negativos
             self.quem_entra_quem_sai()
-    
-        #self.quem_entra_quem_sai()
+        else:
+            print("----------------------------------------")
+            print("\nFim do SIMPLEX! Solução ótima encontrada.")
+            self.exibe_solucao_final()
+
 
     def quem_entra_quem_sai(self):
         linha_func_obj = self.tabela[0, :]
-        candidatos = []
-        variaveis = []
-        n_coluna = []
-        valor = 0
-        for i in range(self.num_variaveis + self.num_restricoes):
-            if linha_func_obj[i + 1] > 0:
-                candidatos.append(linha_func_obj[i + 1])
-                variaveis.append(self.nomes_colunas[i + 1])
-                n_coluna.append(i + 1)
-                valor = valor + 1
+        
+        # --- LÓGICA DE PIVOTEAMENTO CORRIGIDA ---
+        # Para maximização, a variável que entra é a que tem o coeficiente
+        # mais negativo na linha Z.
+        menor_valor_z = np.min(linha_func_obj[1:-1])
+        
+        if menor_valor_z >= -1e-9:
+             print("\n\033[32mNão há mais valores negativos na linha Z. Solução ótima encontrada.\033[0m")
+             self.exibe_solucao_final()
+             return
 
-        variaveis = np.array(variaveis)
-        candidatos = np.array(candidatos)
-        n_coluna = np.array(n_coluna)
+        # +1 para compensar a coluna Z que foi ignorada
+        coluna_pivo_idx = np.argmin(linha_func_obj[1:-1]) + 1
+        variavel_entra = self.nomes_colunas[coluna_pivo_idx]
 
-        maior = 0
-        for n in range(valor):
-            if candidatos[n] > maior:
-                maior = candidatos[n]
-                posicao = n
-        coluna_maior = n_coluna[posicao]  # Coluna do maior coeficiente
         print("----------------------------------------")
         print("\nAtualizando a tabela do SIMPLEX:\n")
-        print(f"O maior valor é: {maior:.2f} , da variavel {variaveis[posicao]}, na coluna {n_coluna[posicao]}")
-        print(f"\033[36m\nPortanto {variaveis[posicao]} entra na base\033[0m")
+        print(f"O menor valor (mais negativo) é: {menor_valor_z:.2f}, da variavel {variavel_entra}")
+        print(f"\033[36m\nPortanto {variavel_entra} entra na base\033[0m")
 
-        coluna_b = self.tabela[:, self.num_variaveis + self.num_restricoes + 1]
-        coluna_comp = self.tabela[:, coluna_maior]
+        coluna_b = self.tabela[1:, -1]
+        coluna_pivo = self.tabela[1:, coluna_pivo_idx]
 
         divisao = []
-        for b in range(self.num_restricoes):
-            # Considera apenas valores positivos no denominador para razão válida
-            if coluna_comp[b + 1] > 0:
-                divisao.append(coluna_b[b + 1] / coluna_comp[b + 1])
+        for i in range(len(coluna_pivo)):
+            if coluna_pivo[i] > 1e-9:
+                divisao.append(coluna_b[i] / coluna_pivo[i])
             else:
-                divisao.append(float('inf'))  # Ignora pivôs inválidos
+                divisao.append(float('inf'))
 
-        menor = min(divisao)
-        if menor == float('inf'):
-            print("\n\033[31mNão existe pivô válido. Solução ótima ou problema ilimitado.\033[0m")
-            print("\n")
-            self.imprime_tab()
-            #print("\n")
-            self.exibe_solucao_apenas()
-            return  # Para o loop aqui
+        if all(d == float('inf') for d in divisao):
+            print("\n\033[31mNão existe pivô válido (todos os coeficientes na coluna pivô são <= 0).\033[0m")
+            print("\033[31mO problema possui SOLUÇÃO ILIMITADA.\033[0m")
+            return
 
-        posicao_div = divisao.index(menor)
+        linha_pivo_idx = np.argmin(divisao)
+        variavel_sai = self.variaveis_base[linha_pivo_idx]
+        
+        print(f"\nMenor valor da razão: {min(divisao):.2f}, da variável {variavel_sai}")
+        print(f"\033[36m\nPortanto quem sai é {variavel_sai}\033[0m")
 
-        print(f"\nMenor valor:  {menor:.2f} da variavel {self.variaveis_base[posicao_div]} ")
-        print(f"\033[36m\nPortanto quem sai sera o {self.variaveis_base[posicao_div]} e quem entra sera o {variaveis[posicao]} \033[0m")
+        self.variaveis_base[linha_pivo_idx] = variavel_entra
+        print(f"\n ->  NOVA BASE: {self.variaveis_base}")
 
-        self.variaveis_base[posicao_div] = variaveis[posicao]
-        print(f"\n ->  Nova BASE: {self.variaveis_base}")
-
-        self.cria_nova_tabela()
+        self.escalona_tabela(linha_pivo_idx + 1, coluna_pivo_idx)
 
 
-    def cria_nova_tabela(self):
-
-        self.num_variaveis = self.coeficientes.shape[1]
-        self.num_restricoes = self.coeficientes.shape[0]
-        #print(self.nomes_colunas)
-        #base= np.array((base))
-        self.nomes_linhas = ["Z"] + self.variaveis_base.tolist()
-        #print(self.nomes_linhas)
-        df = pd.DataFrame(self.tabela, columns=self.nomes_colunas, index=self.nomes_linhas)
+    def escalona_tabela(self, linha_pivo_idx, coluna_pivo_idx):
+        pivo = self.tabela[linha_pivo_idx, coluna_pivo_idx]
+        
+        self.tabela[linha_pivo_idx, :] /= pivo
+        
+        for i in range(self.tabela.shape[0]):
+            if i != linha_pivo_idx:
+                fator = self.tabela[i, coluna_pivo_idx]
+                self.tabela[i, :] -= fator * self.tabela[linha_pivo_idx, :]
+        
         self.imprime_tab()
-        #print("\nTabela do Simplex nova :\n")
-        #print(df.round(2))
-        #self.escalona()
-        self.escalonar_coluna_por_pivo()
+        self.exibe_solucao()
+
 
     def imprime_tab(self):
-        self.num_variaveis = self.coeficientes.shape[1]
-        self.num_restricoes = self.coeficientes.shape[0]
-        self.nomes_linhas = ["Z"] + self.variaveis_base.tolist()
+        self.nomes_linhas = ["Z"] + list(self.variaveis_base)
         df = pd.DataFrame(self.tabela, columns=self.nomes_colunas, index=self.nomes_linhas)
         print("\n\033[32mTabela do Simplex:\033[0m\n")
         print(df.round(2))
         print("\n")
 
+    def exibe_solucao_final(self):
+        self.imprime_tab()
+        indice_coluna_b = self.tabela.shape[1] - 1
+        valor_z = self.tabela[0, indice_coluna_b]
+        print(f"\033[33m\nValor Ótimo de Z é = {valor_z:.3f}\n\033[0m")
 
-    def escalonar_coluna_por_pivo(self):
-
-        base= self.variaveis_base
-        #print(base)
-        #print(range(len(base)))
-        posicao= []
-        for i in range(len(base)):
-            aux=base[i]
-            for j in range(len(self.nomes_colunas)):
-                if aux == self.nomes_colunas[j]:
-                    posicao.append(j)
-                    #print(posicao)
-
-        for i in range(len(posicao)):
-            coluna_pivo= posicao[i]
-            linha_pivo= i +1 
-            A = self.tabela.astype(float).copy()
-            pivo = A[linha_pivo, coluna_pivo]
-            if pivo == 0:
-                raise ValueError("O pivô é zero. Não é possível escalonar com esse pivô.")
-
-            A[linha_pivo] = A[linha_pivo] / pivo
-        
-            for i in range(A.shape[0]):
-                if i != linha_pivo:
-                    fator = A[i, coluna_pivo]
-                    A[i] = A[i] - fator * A[linha_pivo]
-            self.tabela = A
-            #print(self.tabela)
-        
-        linha_func_obj = self.tabela[0, :]
-        if any(linha_func_obj[1:self.num_variaveis + self.num_restricoes + 1] > 0):
-            self.exibe_solucao()
-        else:
-            #print(self.tabela)
-            #print("Fim do SIMPLEX!")
-            #self.imprime_tab()
-            self.exibe_solucao()
-
-    def exibe_solucao_apenas(self):
-        linha_func_obj = self.tabela[0, :]
-        matriz_sol = np.array([linha_func_obj])  # inicializa com a linha Z
-
-        for i in range(1, self.num_restricoes + 1):
-            linha_base = self.tabela[i, :]
-            matriz_sol = np.vstack((matriz_sol, linha_base))
-
-        print("\nLinha da função objetivo:")
-        print(f"{linha_func_obj}")
-        valor_z= linha_func_obj[self.num_variaveis + self.num_restricoes + 1 ]
-        #print(f"\nO valor de Z é = {-1 * valor_z:.3f}\n")
-        print(f"\033[33m\nO valor de Z é = {-1 * valor_z:.3f}\n\033[0m")
-
-        valor_base=[]
-        for j in range(self.num_restricoes):
-            valor_base.append(matriz_sol[ j + 1 , self.num_variaveis + self.num_restricoes + 1])
-        
-        print("Os valores das variaveis na base são: ")
-        for valor in range(self.num_restricoes):
-            print(f"\033[35m\nVariável {self.variaveis_base[valor]} = {valor_base[valor]:.2f} \033[0m")
-
-    """
-    def escalona(self):
-        base= self.variaveis_base
-        #print(base)
-        #print(range(len(base)))
-        posicao= []
-        for i in range(len(base)):
-            aux=base[i]
-            for j in range(len(self.nomes_colunas)):
-                if aux == self.nomes_colunas[j]:
-                    posicao.append(j)
-                    print(posicao)
-        for k in range(len(posicao)):
-            coluna_escalona= self.tabela[:, posicao[k]]
-            #print(coluna_escalona)
-            for n in range(len(self.variaveis_base)):
-                for j in range(len(coluna_escalona)):
-                    if coluna_escalona[j] != 0:
-                        coluna_escalona
-                    if j == n + 1:
-                        if coluna_escalona
-                        print("ok")
-                    else:
-                        print("vish")
-    """
+        print("Valores das variáveis na solução ótima: ")
+        for i in range(len(self.variaveis_base)):
+            valor_base = self.tabela[i + 1, indice_coluna_b]
+            print(f"\033[35m\nVariável {self.variaveis_base[i]} = {valor_base:.2f} \033[0m")
