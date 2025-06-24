@@ -9,28 +9,6 @@ class Simplex:
         self.f_obj = f_obj
         self.tabela = None
 
-    def m_grande(self):
-        print(self.operadores)
-        self.num_variaveis = self.coeficientes.shape[1]
-        self.num_restricoes = self.coeficientes.shape[0]
-        posicao=0
-        aux= 0 
-        for i in range(len(self.operadores)):
-            if self.operadores[i] == '>=':
-                aux= aux + 1
-                posicao=i                                       #AAAAAAAAAAAAAAAAAAAAA
-        if aux == 0 :
-            print('entrou1')
-            self.cria_tabela()
-        elif aux != 0:
-            
-            print('entrou2')
-            self.num_restricoes= self.num_restricoes + 1
-            print(self.num_restricoes)
-            self.cria_tabela()
-            ...
-        
-
     def cria_tabela(self):
         print("\n\033[31mComeço do SIMPLEX\033[0m")
         print("\033[31m-------------------------------------\033[0m")
@@ -97,71 +75,73 @@ class Simplex:
         if (aux == 0):
             print("----------------------------------------")
             print("\nFim do SIMPLEX!")
+            self.exibe_solucao_apenas()
+            print("\n")
             self.imprime_tab()
+            return
         else:
             self.quem_entra_quem_sai()
     
         #self.quem_entra_quem_sai()
 
     def quem_entra_quem_sai(self):
-        
         linha_func_obj = self.tabela[0, :]
-        candidatos=[]
-        variaveis= []
-        n_coluna= []
-        valor=0
+        candidatos = []
+        variaveis = []
+        n_coluna = []
+        valor = 0
         for i in range(self.num_variaveis + self.num_restricoes):
-            if(linha_func_obj[i+1] > 0):
-                candidatos.append (linha_func_obj[i+1])
-                variaveis.append (self.nomes_colunas[i+1])
-                n_coluna.append (i+1)
-                valor= valor +1 
+            if linha_func_obj[i + 1] > 0:
+                candidatos.append(linha_func_obj[i + 1])
+                variaveis.append(self.nomes_colunas[i + 1])
+                n_coluna.append(i + 1)
+                valor = valor + 1
 
-        variaveis= np.array((variaveis))
-        candidatos= np.array((candidatos))
-        n_coluna= np.array((n_coluna))
+        variaveis = np.array(variaveis)
+        candidatos = np.array(candidatos)
+        n_coluna = np.array(n_coluna)
 
-        
-        #print(f"Variáveis: {variaveis}")
-        #print(f"Valores: {candidatos}")
-        #print(f"Colunas: {n_coluna}")
-        maior= 0
+        maior = 0
         for n in range(valor):
             if candidatos[n] > maior:
-                maior= candidatos[n]
-                posicao= n
-        coluna_maior= n_coluna[posicao] #indica a coluna do maior coeficiente 
+                maior = candidatos[n]
+                posicao = n
+        coluna_maior = n_coluna[posicao]  # Coluna do maior coeficiente
         print("----------------------------------------")
         print("\nAtualizando a tabela do SIMPLEX:\n")
         print(f"O maior valor é: {maior:.2f} , da variavel {variaveis[posicao]}, na coluna {n_coluna[posicao]}")
-        #print(f"\nPortanto {variaveis[posicao]} entra na base")
         print(f"\033[36m\nPortanto {variaveis[posicao]} entra na base\033[0m")
 
-        coluna_b= self.tabela[:, self.num_variaveis + self.num_restricoes + 1]
-        #print(f"Coluna b: {coluna_b}")
-        coluna_comp= self.tabela[:, coluna_maior]
-        #print(f"Coluna do {variaveis[posicao]}: {coluna_comp}")
-        divisao=[]
-        for b in range(self.num_restricoes):
-            divisao.append( coluna_b[b+1]/coluna_comp[b+1] )
-        divisao= np.array((divisao))
+        coluna_b = self.tabela[:, self.num_variaveis + self.num_restricoes + 1]
+        coluna_comp = self.tabela[:, coluna_maior]
 
-        print(f"\nValores da divisao: {divisao}")
-        menor=divisao[0]
-        for k in range(self.num_restricoes):
-            if divisao[k] < menor :
-                menor= divisao[k]
-                posicao_div=k
+        divisao = []
+        for b in range(self.num_restricoes):
+            # Considera apenas valores positivos no denominador para razão válida
+            if coluna_comp[b + 1] > 0:
+                divisao.append(coluna_b[b + 1] / coluna_comp[b + 1])
             else:
-                posicao_div=0 
+                divisao.append(float('inf'))  # Ignora pivôs inválidos
+
+        menor = min(divisao)
+        if menor == float('inf'):
+            print("\n\033[31mNão existe pivô válido. Solução ótima ou problema ilimitado.\033[0m")
+            print("\n")
+            self.imprime_tab()
+            #print("\n")
+            self.exibe_solucao_apenas()
+            return  # Para o loop aqui
+
+        posicao_div = divisao.index(menor)
+
         print(f"\nMenor valor:  {menor:.2f} da variavel {self.variaveis_base[posicao_div]} ")
         print(f"\033[36m\nPortanto quem sai sera o {self.variaveis_base[posicao_div]} e quem entra sera o {variaveis[posicao]} \033[0m")
 
-        self.variaveis_base[posicao_div]=variaveis[posicao]
+        self.variaveis_base[posicao_div] = variaveis[posicao]
         print(f"\n ->  Nova BASE: {self.variaveis_base}")
-        #nova_base= self.variaveis_base
-        #return nova_base
+
         self.cria_nova_tabela()
+
 
     def cria_nova_tabela(self):
 
@@ -186,7 +166,6 @@ class Simplex:
         print("\n\033[32mTabela do Simplex:\033[0m\n")
         print(df.round(2))
         print("\n")
-
 
 
     def escalonar_coluna_por_pivo(self):
@@ -228,6 +207,27 @@ class Simplex:
             #self.imprime_tab()
             self.exibe_solucao()
 
+    def exibe_solucao_apenas(self):
+        linha_func_obj = self.tabela[0, :]
+        matriz_sol = np.array([linha_func_obj])  # inicializa com a linha Z
+
+        for i in range(1, self.num_restricoes + 1):
+            linha_base = self.tabela[i, :]
+            matriz_sol = np.vstack((matriz_sol, linha_base))
+
+        print("\nLinha da função objetivo:")
+        print(f"{linha_func_obj}")
+        valor_z= linha_func_obj[self.num_variaveis + self.num_restricoes + 1 ]
+        #print(f"\nO valor de Z é = {-1 * valor_z:.3f}\n")
+        print(f"\033[33m\nO valor de Z é = {-1 * valor_z:.3f}\n\033[0m")
+
+        valor_base=[]
+        for j in range(self.num_restricoes):
+            valor_base.append(matriz_sol[ j + 1 , self.num_variaveis + self.num_restricoes + 1])
+        
+        print("Os valores das variaveis na base são: ")
+        for valor in range(self.num_restricoes):
+            print(f"\033[35m\nVariável {self.variaveis_base[valor]} = {valor_base[valor]:.2f} \033[0m")
 
     """
     def escalona(self):
