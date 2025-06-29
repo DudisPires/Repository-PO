@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from simplex_code2 import Simplex
+from simplex_code import Simplex
 
 class SimplexMGrande:
     def __init__(self, A, b, c, operadores):
@@ -15,7 +15,6 @@ class SimplexMGrande:
         
         A_expandida = self.A_original.copy()
         f_obj_expandida = list(self.c_original)
-        
         nomes_variaveis = [f"X{i+1}" for i in range(num_vars_originais)]
         base_inicial = [None] * num_restricoes
         indices_artificiais = []
@@ -35,7 +34,6 @@ class SimplexMGrande:
                 A_expandida = np.hstack([A_expandida, coluna_excesso])
                 f_obj_expandida.append(0)
                 nomes_variaveis.append(f"E{i+1}")
-
                 coluna_artificial = np.zeros((num_restricoes, 1))
                 coluna_artificial[i, 0] = 1
                 A_expandida = np.hstack([A_expandida, coluna_artificial])
