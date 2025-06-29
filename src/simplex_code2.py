@@ -16,9 +16,7 @@ class Simplex:
 
 
     def cria_tabela(self):
-        # Esta função é mais adequada para problemas padrão (não Big-M)
         print("\n\033[31mComeço do SIMPLEX (Método Padrão)\033[0m")
-        # ... (o resto desta função pode permanecer como está, pois o M-Grande não a utiliza)
         self.num_variaveis = self.coeficientes.shape[1]
         self.num_restricoes = self.coeficientes.shape[0]
 
@@ -57,10 +55,7 @@ class Simplex:
             valor_base = self.tabela[j + 1, indice_coluna_b]
             print(f"\033[35m\nVariável {self.variaveis_base[j]} = {valor_base:.2f} \033[0m")
 
-        # --- LÓGICA DE PARADA CORRIGIDA ---
-        # Para o método padrão (indicadores negativos), a solução é ótima quando
-        # não há mais valores negativos na linha Z.
-        if any(linha_func_obj[1:-1] < -1e-9): # Procura por negativos
+        if any(linha_func_obj[1:-1] < -1e-9): 
             self.quem_entra_quem_sai()
         else:
             print("----------------------------------------")
@@ -70,10 +65,6 @@ class Simplex:
 
     def quem_entra_quem_sai(self):
         linha_func_obj = self.tabela[0, :]
-        
-        # --- LÓGICA DE PIVOTEAMENTO CORRIGIDA ---
-        # Para maximização, a variável que entra é a que tem o coeficiente
-        # mais negativo na linha Z.
         menor_valor_z = np.min(linha_func_obj[1:-1])
         
         if menor_valor_z >= -1e-9:
@@ -81,7 +72,6 @@ class Simplex:
              self.exibe_solucao_final()
              return
 
-        # +1 para compensar a coluna Z que foi ignorada
         coluna_pivo_idx = np.argmin(linha_func_obj[1:-1]) + 1
         variavel_entra = self.nomes_colunas[coluna_pivo_idx]
 
@@ -142,7 +132,7 @@ class Simplex:
         self.imprime_tab()
         indice_coluna_b = self.tabela.shape[1] - 1
         valor_z = self.tabela[0, indice_coluna_b]
-        print(f"\033[33m\nValor Ótimo de Z é = {valor_z:.3f}\n\033[0m")
+        print(f"\033[33m\nValor Ótimo de Z é = {valor_z:.2f}\n\033[0m")
 
         print("Valores das variáveis na solução ótima: ")
         for i in range(len(self.variaveis_base)):
