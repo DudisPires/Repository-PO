@@ -16,7 +16,7 @@ def carregar_problema_json(caminho_arquivo):
     return coeficientes, independentes, f_obj, operadores
 
 def main():
-    caminho = 'src/problema.json'
+    caminho = 'problema.json'
     coef, indep, fobj, ops = carregar_problema_json(caminho)
     simplex = SimplexMGrande(coef, indep, fobj, ops)
     solver = TwoPhaseSimplex(coef, indep, fobj, ops)

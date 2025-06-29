@@ -1,5 +1,5 @@
 import numpy as np
-from simplex_code2 import Simplex
+from simplex_code import Simplex
 
 class TwoPhaseSimplex:
     def __init__(self, coeficientes, independentes, f_obj, operadores):
@@ -43,7 +43,6 @@ class TwoPhaseSimplex:
         f_obj_fase1 = np.zeros(A_fase1.shape[1])
         for idx in indices_artificiais:
             f_obj_fase1[idx] = -1  
-
         linha_w = -f_obj_fase1
         valor_w = 0.0
 
@@ -60,9 +59,7 @@ class TwoPhaseSimplex:
     def resolver(self):
         print("\n\033[34mResolvendo com o Método das Duas Fases...\033[0m")
         
-        print("\n\033[36m--- INÍCIO DA FASE 1 ---\033[0m")
-        print("Objetivo: Maximizar W' = - (Soma das variáveis artificiais)")
-        
+        print("\n\033[36m--- INÍCIO DA FASE 1 ---\033[0m")        
         A_f1, linha_w, nomes_vars_f1, base_f1, idx_artificiais = self._preparar_fase1()
         
         num_restricoes, num_total_vars_f1 = A_f1.shape
