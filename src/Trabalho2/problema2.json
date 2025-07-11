@@ -1,0 +1,9 @@
+{
+  "f_obj": [3, 4],
+  "coeficientes": [
+    [2, 5],
+    [2, 1]
+  ],
+  "independentes": [15, 9],
+  "operadores": ["<=", "<="]
+}
