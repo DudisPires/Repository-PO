@@ -33,7 +33,7 @@ def main():
         if opcao == '1':
             print("Resolvendo com M-Grande...")
             simplex_m = SimplexMGrande(coef, indep, fobj, ops)
-            simplex_m.resolver() # Este ainda usará o modo 'verbose' antigo
+            simplex_m.resolver() 
 
         if opcao == '2':
             print("Resolvendo com Duas Fases (modo verboso)...")
