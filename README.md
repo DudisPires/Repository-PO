@@ -86,6 +86,8 @@ python3 main.py
 - Quando utilizando o Simplex Solver(Simplex normal, M grande ou Simplex Duas fases):
 
   ![Saida Solver](src/images/m_grande.png)
+  
+- Quando utilizando o método Branch and Bound
 
   ![Saida Branch and Bound](src/images/branch.png)
   
