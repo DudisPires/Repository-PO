@@ -1,7 +1,7 @@
 # Pesquisa Operacional - Projetos e Algoritmos
 
 ## 📖 Sobre
-Este repositório é dedicado à disciplina de Pesquisa Operacional (PO). Aqui você encontrará implementações de algoritmos, soluções de problemas e exemplos práticos estudados durante o curso. O objetivo é criar um recurso centralizado para consulta e aprendizado.
+Este repositório é dedicado à disciplina de Pesquisa Operacional (PO). Aqui você encontrará implementações de algoritmos, soluções de problemas e exemplos práticos estudados durante o curso. 
 
 ## 🚀 Tecnologias Utilizadas
 O projeto foi desenvolvido principalmente com as seguintes tecnologias:
@@ -80,4 +80,10 @@ python3 main.py
   "f_obj": [3, 2],
   "operadores": ["<=", ">="]
   }
-  ``` 
+  ```
+## 💻 Saída no terminal
+
+- Quando utilizando o Simplex Solver:
+
+  ![Saida Solver](src/images/m_grande.png)
+
