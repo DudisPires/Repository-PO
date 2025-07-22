@@ -81,6 +81,8 @@ python3 main.py
   "operadores": ["<=", ">="]
   }
   ```
+- Quando desejar resolver o Simplex normal, basta escolher o método M grande ou Simplex Duas Fases, de maneira que a solução será obtida utilizando apenas as operações do método do Simplex comum. 
+
 ## 💻 Saída no terminal
 
 - Quando utilizando o Simplex Solver (Simplex normal, M grande ou Simplex Duas fases):
