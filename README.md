@@ -10,7 +10,7 @@ Python 3: Linguagem principal para a implementação dos algoritmos.
 
 ##📂 Estrutura do Repositório
 O repositório está organizado da seguinte forma:
-
+```
 /
 ├── src/
 │   ├── Trabalho1
@@ -33,6 +33,7 @@ O repositório está organizado da seguinte forma:
 ├── .gitignore          
 ├── LICENSE             
 └── README.md           
+```
 
 ##🛠️ Instalação e Uso
 Para executar os projetos localmente, siga os passos abaixo:
