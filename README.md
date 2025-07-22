@@ -1,14 +1,15 @@
-#Pesquisa Operacional - Projetos e Algoritmos
-##📖 Sobre
+# Pesquisa Operacional - Projetos e Algoritmos
+
+## 📖 Sobre
 Este repositório é dedicado à disciplina de Pesquisa Operacional (PO). Aqui você encontrará implementações de algoritmos, soluções de problemas e exemplos práticos estudados durante o curso. O objetivo é criar um recurso centralizado para consulta e aprendizado.
 
-##🚀 Tecnologias Utilizadas
+## 🚀 Tecnologias Utilizadas
 O projeto foi desenvolvido principalmente com as seguintes tecnologias:
 
 Python 3: Linguagem principal para a implementação dos algoritmos.
 
 
-##📂 Estrutura do Repositório
+## 📂 Estrutura do Repositório
 O repositório está organizado da seguinte forma:
 ```
 /
@@ -35,7 +36,7 @@ O repositório está organizado da seguinte forma:
 └── README.md           
 ```
 
-##🛠️ Instalação e Uso
+## 🛠️ Instalação e Uso
 Para executar os projetos localmente, siga os passos abaixo:
 
 1. Clone o repositório:
