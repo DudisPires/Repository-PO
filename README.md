@@ -59,13 +59,13 @@ cd src
 cd Trabalho2
 python3 main.py
 ```
-5. Escolha o método que deseja utilizar:
-   ```
-   1- Resolver PL com Simplex M-Grande
-   2- Resolver PL com Simplex Duas Fases
-   3- Resolver PI com Branch and Bound 
-   4- Sair
-   
-   ```
+5. Escolha o método que deseja utilizar no menu:
+```
+1- Resolver PL com Simplex M-Grande
+2- Resolver PL com Simplex Duas Fases
+3- Resolver PI com Branch and Bound 
+4- Sair 
+```
+
 📜 Licença
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
