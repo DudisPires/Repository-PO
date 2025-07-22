@@ -8,7 +8,6 @@ O projeto foi desenvolvido principalmente com as seguintes tecnologias:
 
 Python 3: Linguagem principal para a implementação dos algoritmos.
 
-
 ## 📂 Estrutura do Repositório
 O repositório está organizado da seguinte forma:
 ```
@@ -66,6 +65,19 @@ python3 main.py
 3- Resolver PI com Branch and Bound 
 4- Sair 
 ```
+## ⚠️ Resolução de Problemas 
 
-📜 Licença
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+- Para a inserção de problemas utilize o arquivo **problema.json** seguindo o padrão definido, como esse:
+
+  ```
+  {
+  "coeficientes": [
+    [1, 2],
+    [2, 1]
+  ],
+
+  "independentes": [4, 5],
+  "f_obj": [3, 2],
+  "operadores": ["<=", ">="]
+  }
+  ``` 
